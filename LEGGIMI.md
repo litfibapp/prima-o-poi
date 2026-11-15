@@ -3,8 +3,9 @@
 La lista condivisa dei posti da vedere e delle cose da fare con gli amici.
 Nessuna iscrizione: si entra con il **codice del gruppo** (tipo `fragola-funivia-3075`) o con il link di invito.
 
-Finché Firebase non è collegato, l'app funziona in **modalità prova**: i dati restano solo sul dispositivo.
-Per metterla online servono due servizi gratuiti, da configurare **una volta sola** (circa 15 minuti).
+**L'app è online su <https://litfibapp.github.io/prima-o-poi/>**, collegata al progetto Firebase `prima-o-poi-663d2`.
+I passaggi 1 e 2 qui sotto sono già fatti: restano come promemoria, nel caso servisse rifarli.
+Senza una configurazione Firebase, l'app parte in **modalità prova** e i dati restano solo sul dispositivo.
 
 ---
 
