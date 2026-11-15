@@ -108,6 +108,7 @@
       <input type="search" id="q" placeholder="Cerca…" aria-label="Cerca">
     </div>
 
+    <div id="dups" class="dups" hidden></div>
     <div id="list" class="list"></div>
     <div id="empty" class="empty">
       <h3>Sto caricando la lista…</h3>
@@ -152,6 +153,7 @@
       <p class="formmsg" id="f-msg" aria-live="polite"></p>
     </div>
     <div class="sheet-foot">
+      <div class="dupbox" id="dup-box" role="alert" hidden></div>
       <button class="btn" id="f-submit" type="submit">Aggiungi alla lista</button>
     </div>
   </form>
@@ -175,6 +177,7 @@
       <span class="lbl">Nel gruppo</span>
       <ul id="m-members"></ul>
     </div>
+    <div class="dups" id="m-dups" hidden></div>
 
     <form id="rename-form" class="stack" autocomplete="off">
       <label class="f" for="m-name">Il tuo nome</label>
@@ -200,6 +203,24 @@
     </div>
 
     <a class="legal" href="privacy.html">Privacy e regole d'uso</a>
+  </div>
+</dialog>
+
+<!-- Foglio: il tuo nome c'è già nel gruppo -->
+<dialog id="whoami" class="sheet" aria-labelledby="who-title">
+  <div class="sheet-head"><h2 id="who-title">Questo nome c'è già</h2></div>
+  <div class="sheet-body stack">
+    <p id="who-text"></p>
+    <button class="btn" id="who-same" type="button">Sì, sono io</button>
+    <div class="or"><span>oppure</span></div>
+    <form id="who-form" class="stack" autocomplete="off">
+      <label class="f" for="who-name">No, sono un'altra persona: scegli un altro nome</label>
+      <div class="inline">
+        <input type="text" id="who-name" maxlength="40" placeholder="Es. Marco B." required>
+        <button class="btn btn-soft" type="submit">Usa questo</button>
+      </div>
+    </form>
+    <p class="formmsg" id="who-msg" aria-live="polite"></p>
   </div>
 </dialog>
 

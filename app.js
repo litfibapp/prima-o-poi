@@ -40,14 +40,43 @@ function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = fals
 function notice(msg) { $("notice").textContent = msg || ""; $("notice").hidden = !msg; }
 function show(screen) { for (const s of ["screen-group", "screen-name", "screen-app"]) $(s).hidden = s !== screen; }
 const fmtDate = ms => new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" }).format(new Date(ms));
-const fans = it => Object.entries(it.interested || {}).filter(([, v]) => v).map(([k]) => k);
+// La stessa persona può avere più identificativi (nomi uniti): canon() li riporta tutti a quello principale.
+let aliasOf = {};
+const canon = id => aliasOf[id] || id;
+const canonMe = () => canon(me);
+const isMe = id => !!id && canon(id) === canonMe();
+const myIds = () => [me, canonMe(), ...((members[canonMe()] || {}).aliases || [])].filter((v, i, a) => v && a.indexOf(v) === i);
+const fans = it => [...new Set(Object.entries(it.interested || {}).filter(([, v]) => v).map(([k]) => canon(k)))];
+const normName = s => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const findMemberByName = (name, exceptId) => { const n = normName(name); return n ? Object.keys(members).find(id => id !== exceptId && normName(members[id].name) === n) : undefined; };
+
+// Idee doppie: stesso titolo (senza articoli, accenti e maiuscole) oppure stesso link.
+const STOP = new Set("il lo la i gli le l un una uno di del della dello dei degli delle da dal dalla a al alla ai in nel nella con su per e".split(" "));
+const normTitle = s => normName(s).split(" ").filter(w => w && !STOP.has(w)).join(" ");
+const normLink = u => { try { const x = new URL(u); return (x.hostname.replace(/^www\./, "") + x.pathname.replace(/\/+$/, "") + (/google\./.test(x.hostname) ? x.search : "")).toLowerCase(); } catch (e) { return ""; } };
+function sameIdea(a, b) {
+  const ta = normTitle(a.title), tb = normTitle(b.title);
+  if (ta && ta === tb) return true;
+  const la = a.link ? normLink(a.link) : "", lb = b.link ? normLink(b.link) : "";
+  return !!la && la === lb;
+}
+function dupGroups() {
+  const sorted = [...items].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)), used = new Set(), groups = [];
+  for (const a of sorted) {
+    if (used.has(a.id)) continue;
+    const g = [a];
+    for (const b of sorted) if (b !== a && !used.has(b.id) && g.some(x => sameIdea(x, b))) g.push(b);
+    if (g.length > 1) { g.forEach(x => used.add(x.id)); groups.push(g); }
+  }
+  return groups;
+}
 const safeUrl = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : null; } catch (e) { return null; } };
 const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; } };
 const normCode = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").slice(0, 60);
-const nameOf = id => (id === me ? "te" : (members[id] && members[id].name) || "un amico");
-function colorOf(id) { let x = 0; for (const c of id || "") x = (x * 31 + c.charCodeAt(0)) >>> 0; return `hsl(${x % 360} 55% 45%)`; }
+const nameOf = id => (isMe(id) ? "te" : (members[canon(id)] && members[canon(id)].name) || "un amico");
+function colorOf(id) { let x = 0; for (const c of canon(id) || "") x = (x * 31 + c.charCodeAt(0)) >>> 0; return `hsl(${x % 360} 55% 45%)`; }
 function initials(id) {
-  const n = (members[id] && members[id].name) || "?";
+  const n = (members[canon(id)] && members[canon(id)].name) || "?";
   return n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("") || "?";
 }
 // Le iniziali sono decorative: il nome completo è già nel testo accanto (o nel title del gruppo di facce).
@@ -110,10 +139,10 @@ for (const [k, v] of Object.entries(CATS)) $("f-cat").add(new Option(v, k));
 function openSheet(it, sharedText) {
   editing = it || null;
   $("sheet-title").textContent = it ? "Modifica" : "Aggiungi un'idea";
-  $("f-submit").textContent = it ? "Salva le modifiche" : "Aggiungi alla lista";
+  $("f-submit").hidden = false; $("f-submit").textContent = it ? "Salva le modifiche" : "Aggiungi alla lista";
   $("paste-wrap").hidden = !!it;
   $("f-paste").value = ""; $("f-pastemsg").textContent = ""; $("f-msg").textContent = "";
-  auto.title = auto.where = "";
+  auto.title = auto.where = ""; dupOk = false; $("dup-box").hidden = true;
   $("f-title").value = it ? it.title || "" : "";
   $("f-where").value = it ? it.where || "" : "";
   $("f-link").value = it ? it.link || "" : "";
@@ -164,6 +193,8 @@ $("item-form").addEventListener("submit", e => {
     write(store.updateItem(code, editing.id, { ...fields, editedAt: Date.now() }));
     toast("Modifiche salvate");
   } else {
+    const twin = !dupOk && items.find(x => sameIdea(x, fields));
+    if (twin) { showDup(twin); return; }
     write(store.addItem(code, { ...fields, by: me, createdAt: Date.now(), done: false, doneAt: null, doneBy: null, interested: { [me]: true } }));
     toast("Aggiunto alla lista");
     if (state.status === "done") { state.status = "todo"; saveFilters(); syncChips(); }
@@ -171,8 +202,50 @@ $("item-form").addEventListener("submit", e => {
   sheet.close();
 });
 
+// Prima di aggiungere un doppione: avvisa e propone di segnare "Ci sto" su quella che c'è già.
+let dupOk = false;
+function showDup(twin) {
+  const box = $("dup-box"), n = fans(twin).length;
+  const already = fans(twin).includes(canonMe());
+  box.replaceChildren(
+    h("p", null, h("strong", null, `«${twin.title}» è già nella lista`),
+      twin.done ? ", ed è già stata fatta" : "",
+      (isMe(twin.by) ? ". L'hai aggiunta tu" : `. L'ha aggiunta ${twin.by ? nameOf(twin.by) : "qualcuno"}`) + (n ? `, ${n === 1 ? "ci sta 1 persona" : `ci stanno ${n} persone`}.` : ".")),
+    h("div", { class: "dup-acts" },
+      h("button", { class: "btn", type: "button", onclick: () => {
+        if (!already && !twin.done) write(store.setInterest(code, twin.id, true));
+        sheet.close();
+        toast(twin.done ? "Era già fatta: la trovi tra le Fatte" : already ? "Ci sei già su quella" : `Segnato "Ci sto" su «${twin.title}»`);
+      } }, twin.done || already ? "Ok, non aggiungerla" : "Segna \"Ci sto\" su quella"),
+      h("button", { class: "btn btn-soft", type: "button", onclick: () => { dupOk = true; $("item-form").requestSubmit(); } }, "Aggiungila lo stesso")));
+  box.hidden = false; $("f-submit").hidden = true;
+
+}
+for (const id of ["f-title", "f-link"]) $(id).addEventListener("input", () => { dupOk = false; $("dup-box").hidden = true; $("f-submit").hidden = false; });
+
+// Unisce un gruppo di idee doppie nella più vecchia: somma i "Ci sto", tiene note e link.
+async function mergeIdeas(g) {
+  const [keep, ...rest] = g;
+  const interested = {};
+  for (const x of g) for (const [k, v] of Object.entries(x.interested || {})) if (v) interested[k] = true;
+  const notes = [...new Set(g.map(x => (x.note || "").trim()).filter(Boolean))];
+  const doneOnes = g.filter(x => x.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+  const patch = {
+    interested, note: notes.join("\n").slice(0, 600),
+    where: keep.where || (g.find(x => x.where) || {}).where || "",
+    link: keep.link || (g.find(x => x.link) || {}).link || "",
+    done: doneOnes.length > 0, doneAt: doneOnes.length ? doneOnes[0].doneAt || null : null, doneBy: doneOnes.length ? doneOnes[0].doneBy || null : null,
+    editedAt: Date.now(),
+  };
+  try { await store.mergeItems(code, keep.id, patch, rest.map(x => x.id)); toast(`Unite le ${g.length} copie di «${keep.title}»`); }
+  catch (e) { onWriteError(e); }
+}
+
 // ---------- card actions
-function toggleFan(it) { write(store.setInterest(code, it.id, !(it.interested || {})[me])); }
+function toggleFan(it) {
+  const mine = fans(it).includes(canonMe());
+  write(store.setInterest(code, it.id, !mine, Object.keys(it.interested || {}).filter(isMe)));
+}
 function toggleDone(it) {
   write(store.updateItem(code, it.id, it.done ? { done: false, doneAt: null, doneBy: null } : { done: true, doneAt: Date.now(), doneBy: me }));
   toast(it.done ? "Rimessa tra le cose da fare" : "Fatto! Timbro messo");
@@ -212,6 +285,15 @@ function render() {
   else if (state.sort === "top") view.sort((a, b) => fans(b).length - fans(a).length || (b.createdAt || 0) - (a.createdAt || 0));
   else view.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
+  const groups = loaded ? dupGroups() : [];
+  $("dups").hidden = !groups.length;
+  if (groups.length) $("dups").replaceChildren(
+    h("p", null, h("strong", null, groups.length === 1 ? "C'è un'idea doppia" : `Ci sono ${groups.length} idee doppie`),
+      ": unendole si sommano i \"Ci sto\" e si tengono note e link."),
+    h("ul", null, groups.map(g => h("li", null,
+      h("span", null, `«${g[0].title}» `, h("b", null, `×${g.length}`)),
+      h("button", { class: "ghost", type: "button", onclick: e => { e.currentTarget.disabled = true; mergeIdeas(g); } }, "Unisci")))));
+
   $("list").replaceChildren(...view.map(card));
   $("empty").hidden = view.length > 0;
   if (!view.length) {
@@ -223,7 +305,7 @@ function render() {
 }
 
 function card(it) {
-  const fanIds = fans(it), mine = fanIds.includes(me);
+  const fanIds = fans(it), mine = fanIds.includes(canonMe());
   const link = it.link ? safeUrl(it.link) : null;
   const maps = it.where ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent((it.title ? it.title + ", " : "") + it.where) : null;
   const isArmed = armed.has(it.id);
@@ -273,8 +355,31 @@ $("m-install-btn").addEventListener("click", async () => {
 });
 
 function renderMembers() {
-  const ids = Object.keys(members).sort((a, b) => (a === me ? -1 : b === me ? 1 : nameOf(a).localeCompare(nameOf(b))));
-  $("m-members").replaceChildren(...ids.map(id => h("li", null, face(id), id === me ? (members[id].name || "Tu") + " (tu)" : nameOf(id))));
+  const cm = canonMe();
+  const ids = Object.keys(members).sort((a, b) => (a === cm ? -1 : b === cm ? 1 : nameOf(a).localeCompare(nameOf(b))));
+  $("m-members").replaceChildren(...ids.map(id => h("li", null, face(id), id === cm ? (members[id].name || "Tu") + " (tu)" : nameOf(id))));
+
+  // Nomi doppi: stessi nomi (senza maiuscole e accenti) con identificativi diversi
+  const byName = {};
+  for (const id of ids) { const n = normName(members[id].name); if (n) (byName[n] ||= []).push(id); }
+  const dups = Object.values(byName).filter(g => g.length > 1);
+  $("m-dups").hidden = !dups.length;
+  $("m-dups").replaceChildren(
+    h("span", { class: "lbl" }, "Nomi doppi"),
+    h("p", null, "Di solito è la stessa persona entrata da due telefoni, o da Safari e dall'app installata. Unendoli, idee e \"Ci sto\" finiscono sotto un solo nome. Se sono davvero due persone diverse, chiedete a una delle due di cambiare nome."),
+    h("ul", null, dups.map(g => h("li", null,
+      h("span", null, `«${members[g[0]].name}» `, h("b", null, `×${g.length}`)),
+      h("button", { class: "ghost", type: "button", onclick: e => { e.currentTarget.disabled = true; mergeNames(g); } }, "Unisci")))));
+}
+// Unisce più nomi uguali: tiene il tuo se c'è, altrimenti il più recente.
+async function mergeNames(g) {
+  const cm = canonMe();
+  const into = g.includes(cm) ? cm : [...g].sort((a, b) => (members[b].updatedAt || 0) - (members[a].updatedAt || 0))[0];
+  try {
+    for (const from of g) if (from !== into)
+      await store.mergeMember(code, from, members[from].aliases || [], into, members[into].name);
+    toast(`Unito: ora «${members[into].name}» compare una volta sola`);
+  } catch (e) { onWriteError(e); renderMembers(); }
 }
 $("open-menu").addEventListener("click", () => {
   $("m-code").textContent = code;
@@ -297,7 +402,8 @@ $("m-invite").addEventListener("click", async () => {
 $("rename-form").addEventListener("submit", e => {
   e.preventDefault();
   const n = $("m-name").value.trim(); if (!n) return;
-  ls.set("pop-name", n); write(store.setMember(code, n)); toast("Nome salvato");
+  if (findMemberByName(n, canonMe())) { toast(`C'è già qualcuno che si chiama «${n}» nel gruppo: scegli un nome diverso`); return; }
+  ls.set("pop-name", n); write(store.setMember(code, n, canonMe())); toast("Nome salvato");
 });
 let leaveArmed = false;
 $("m-leave").addEventListener("click", () => {
@@ -316,7 +422,7 @@ $("m-delete").addEventListener("click", async () => {
   deleteArmed = false; b.disabled = true; b.textContent = "Sto eliminando…"; msg.textContent = "";
   try {
     unsub.forEach(f => f()); unsub = [];
-    await store.deleteMyData(code);
+    await store.deleteMyData(code, myIds(), [...new Set([me, canonMe()])]);
     for (const k of ["pop-group", "pop-name", "pop-filters"]) ls.del(k);
     location.href = location.pathname + "?eliminato=1";
   } catch (e) {
@@ -387,11 +493,45 @@ $("name-form").addEventListener("submit", e => {
   ls.set("pop-name", n); startApp();
 });
 
+// Quando entri in un gruppo: se il tuo nome c'è già, chiede se sei tu (da un altro telefono) o un'altra persona.
+let identityDone = false, whoTwin = null;
+function ensureIdentity() {
+  if (identityDone) return;
+  identityDone = true;
+  const name = ls.get("pop-name");
+  if (aliasOf[me]) return;                                   // questo telefono è già unito a un altro nome
+  if (members[me]) { if (members[me].name !== name) write(store.setMember(code, name)); return; }
+  const twin = findMemberByName(name, me);
+  if (!twin) { write(store.setMember(code, name)); return; }
+  whoTwin = twin;
+  $("who-text").textContent = `Nel gruppo c'è già «${members[twin].name}». Sei tu, entrato da un altro telefono o dall'app installata?`;
+  $("who-name").value = ""; $("who-msg").textContent = "";
+  $("whoami").showModal();
+}
+$("whoami").addEventListener("cancel", e => e.preventDefault());   // serve una risposta
+$("who-same").addEventListener("click", async () => {
+  const b = $("who-same"); b.disabled = true;
+  try {
+    const t = members[whoTwin];
+    await store.mergeMember(code, whoTwin, t.aliases || [], me, t.name);
+    ls.set("pop-name", t.name);
+    $("whoami").close(); toast("Fatto: le tue idee e i tuoi \"Ci sto\" sono sotto un solo nome");
+  } catch (e) { $("who-msg").textContent = "Non ci sono riuscito: serve la connessione a internet. Riprova."; console.error(e); }
+  b.disabled = false;
+});
+$("who-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const n = $("who-name").value.trim(), msg = $("who-msg");
+  if (!n) { msg.textContent = "Scrivi un nome."; return; }
+  if (findMemberByName(n, me)) { msg.textContent = `Anche «${n}» è già usato nel gruppo: aggiungi l'iniziale del cognome o un soprannome.`; return; }
+  ls.set("pop-name", n); write(store.setMember(code, n));
+  $("whoami").close(); toast(`Benvenuto, ${n}!`);
+});
+
 function startApp() {
   show("screen-app");
   unsub.forEach(f => f()); unsub = [];
-  const n = ls.get("pop-name");
-  write(store.setMember(code, n));
+  identityDone = false;
   let slow = setTimeout(() => { if (!loaded) notice("Non riesco ancora a raggiungere la lista. Controlla la connessione: si aggiornerà da sola."); }, 10000);
   unsub.push(store.watchItems(code, (list, meta) => {
     items = list;
@@ -399,7 +539,13 @@ function startApp() {
     if (meta.fromCache && list.length) loaded = true;
     render();
   }, err => { console.error(err); notice("Non riesco a leggere la lista di questo gruppo. Prova a uscire e rientrare con il codice."); loaded = true; render(); }));
-  unsub.push(store.watchMembers(code, m => { members = m; render(); if (menu.open) renderMembers(); }, () => {}));
+  unsub.push(store.watchMembers(code, (m, meta) => {
+    members = m;
+    aliasOf = {};
+    for (const [id, v] of Object.entries(m)) for (const a of v.aliases || []) if (a !== id) aliasOf[a] = id;
+    if (!meta || !meta.fromCache) ensureIdentity();
+    render(); if (menu.open) renderMembers();
+  }, () => {}));
   if (store.demo) notice(demoNote);
   render();
   const pending = sessionStorage.getItem("pop-share");
@@ -420,7 +566,8 @@ async function boot() {
   if (shared || invite || deleted) history.replaceState(null, "", location.pathname);
   if (deleted) setTimeout(() => toast("I tuoi dati sono stati eliminati."), 300);
 
-  const configured = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "INCOLLA_QUI";
+  // ?prova nell'indirizzo: modalità prova anche con Firebase collegato (per provare senza toccare i dati veri)
+  const configured = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "INCOLLA_QUI" && !params.has("prova");
   try { store = configured ? await createFirebaseStore(firebaseConfig) : createDemoStore(); }
   catch (e) {
     console.error(e);

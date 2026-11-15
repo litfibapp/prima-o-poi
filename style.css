@@ -179,7 +179,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 12px 8px 20px; }
 .sheet-head h2 { font-size: 22px; }
 .sheet-body { padding: 4px 20px 16px; overflow-y: auto; min-height: 0; flex: 1; }
-.sheet-foot { padding: 12px 20px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); display: flex; flex-direction: column; }
+.sheet-foot { padding: 12px 20px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
 .paste textarea { border-style: dashed; background: var(--accent-soft); border-color: var(--accent); }
 .pastemsg { font-weight: 500; color: var(--accent); font-size: 14px; }
 .pastemsg:empty { display: none; }
@@ -219,3 +219,14 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 #create-code { font-family: ui-monospace, "Cascadia Mono", Menlo, monospace; font-weight: 700; color: var(--accent); }
 .dice { padding: 0; width: 48px; flex: none; font-size: 22px; }
 .btn-ghost-plain { background: none; color: var(--muted); padding: 8px; }
+
+/* doppioni */
+.dups { background: var(--sun-soft); border: 1.5px solid var(--sun); border-radius: var(--r); padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.dups p { margin: 0; font-size: 14px; }
+.dups ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.dups li { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--surface); border-radius: 12px; padding: 6px 6px 6px 12px; min-width: 0; }
+.dups li span { overflow-wrap: anywhere; min-width: 0; }
+#menu .dups { background: var(--sun-soft); }
+.dupbox { background: var(--sun-soft); border: 1.5px solid var(--sun); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.dupbox p { margin: 0; font-size: 15px; }
+.dup-acts { display: flex; flex-direction: column; gap: 8px; }

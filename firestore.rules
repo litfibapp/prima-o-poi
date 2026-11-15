@@ -25,6 +25,13 @@ service cloud.firestore {
         && d.interested is map && d.interested.size() <= 100;
     }
 
+    // aliases: altri identificativi della stessa persona (nomi doppi uniti)
+    function validMember(d) {
+      return d.keys().hasOnly(['name', 'updatedAt', 'aliases'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 40
+        && (!('aliases' in d) || (d.aliases is list && d.aliases.size() <= 20));
+    }
+
     match /groups/{code} {
       // Si può controllare se un codice esiste, ma non elencare tutti i gruppi.
       allow get: if signedIn();
@@ -45,14 +52,16 @@ service cloud.firestore {
 
       match /members/{uid} {
         allow read: if signedIn() && exists(/databases/$(database)/documents/groups/$(code));
-        // Ognuno può cancellare il proprio nome ("Elimina i miei dati").
-        allow delete: if signedIn() && request.auth.uid == uid;
-        allow create, update: if signedIn() && request.auth.uid == uid
-                     && exists(/databases/$(database)/documents/groups/$(code))
-                     && request.resource.data.keys().hasOnly(['name', 'updatedAt'])
-                     && request.resource.data.name is string
-                     && request.resource.data.name.size() > 0
-                     && request.resource.data.name.size() <= 40;
+        // Chi è nel gruppo può togliere un nome: serve per "Elimina i miei dati" e per unire i doppioni.
+        allow delete: if signedIn() && exists(/databases/$(database)/documents/groups/$(code));
+        allow create: if signedIn() && request.auth.uid == uid
+                      && exists(/databases/$(database)/documents/groups/$(code))
+                      && validMember(request.resource.data);
+        // Il proprio nome lo cambia chi lo possiede (o un suo alias); gli altri possono solo aggiungere alias.
+        allow update: if signedIn() && validMember(request.resource.data)
+                      && (request.auth.uid == uid
+                          || request.auth.uid in resource.data.get('aliases', [])
+                          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['aliases']));
       }
     }
   }
