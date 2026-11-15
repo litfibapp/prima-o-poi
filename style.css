@@ -186,10 +186,13 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 .fab span { font-size: 24px; line-height: 0; margin-top: -2px; }
 
 /* bottom sheets */
-.sheet { border: 0; padding: 0; margin: auto auto 0; width: 100%; max-width: 560px; max-height: 92dvh; border-radius: 20px 20px 0 0; background: var(--surface); color: var(--ink); box-shadow: 0 -8px 40px rgba(0,0,0,.25); }
-.sheet[open] { display: flex; flex-direction: column; }
-.sheet::backdrop { background: rgba(10,16,24,.45); }
-@media (min-width: 640px) { .sheet { margin: auto; border-radius: 20px; } }
+/* Sfondo scuro + foglio che sale dal basso. Niente <dialog>: su alcuni iPhone mostrava solo lo sfondo. */
+.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(10,16,24,.45); display: flex; align-items: flex-end; justify-content: center; padding-top: max(16px, env(safe-area-inset-top, 0px)); }
+.overlay[hidden] { display: none; }
+.sheet { position: relative; width: 100%; max-width: 560px; max-height: 92vh; max-height: 92dvh; display: flex; flex-direction: column; overflow: hidden; border-radius: 20px 20px 0 0; background: var(--surface); color: var(--ink); box-shadow: 0 -8px 40px rgba(0,0,0,.25); }
+#menu, #whoami { overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: env(safe-area-inset-bottom, 0px); }
+@media (min-width: 640px) { .overlay { align-items: center; } .sheet { border-radius: 20px; } }
+html.modal-open, html.modal-open body { overflow: hidden; }
 .sheet > form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 12px 8px 20px; }
 .sheet-head h2 { font-size: 22px; }

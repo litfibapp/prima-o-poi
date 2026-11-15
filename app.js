@@ -38,6 +38,17 @@ function h(tag, attrs, ...kids) {
 let toastT;
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3200); }
 function notice(msg) { $("notice").textContent = msg || ""; $("notice").hidden = !msg; }
+// Finestre a comparsa fatte a mano (non <dialog>, che su alcuni iPhone mostra solo lo sfondo scuro).
+const isOpen = el => !el.parentElement.hidden;
+function openModal(el) {
+  el.parentElement.hidden = false;
+  document.documentElement.classList.add("modal-open");
+  el.scrollTop = 0;
+}
+function closeModal(el) {
+  el.parentElement.hidden = true;
+  if (![...document.querySelectorAll(".overlay")].some(o => !o.hidden)) document.documentElement.classList.remove("modal-open");
+}
 function show(screen) { for (const s of ["screen-group", "screen-name", "screen-app"]) $(s).hidden = s !== screen; }
 const fmtDate = ms => new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" }).format(new Date(ms));
 const fmtWhen = ms => new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(ms));
@@ -150,12 +161,12 @@ function openSheet(it, sharedText) {
   $("f-note").value = it ? it.note || "" : "";
   $("f-cat").value = it && CATS[it.category] ? it.category : "altro";
   (it && it.kind === "attivita" ? $("k-att") : $("k-posto")).checked = true;
-  if (!sheet.open) sheet.showModal();
+  if (!isOpen(sheet)) openModal(sheet);
   if (sharedText) { $("f-paste").value = sharedText; applyPaste(); }
   else if (!it) setTimeout(() => $("f-paste").focus({ preventScroll: true }), 50);
 }
-$("sheet-close").addEventListener("click", () => sheet.close());
-sheet.addEventListener("click", e => { if (e.target === sheet) sheet.close(); });
+$("sheet-close").addEventListener("click", () => closeModal(sheet));
+sheet.parentElement.addEventListener("click", e => { if (e.target === sheet.parentElement) closeModal(sheet); });
 
 function applyPaste() {
   const text = $("f-paste").value.trim(), msg = $("f-pastemsg");
@@ -192,7 +203,7 @@ $("item-form").addEventListener("submit", e => {
   };
   if (editing) {
     const changed = Object.keys(fields).some(k => (fields[k] || "") !== (editing[k] || ""));
-    if (!changed) { sheet.close(); toast("Nessuna modifica"); return; }
+    if (!changed) { closeModal(sheet); toast("Nessuna modifica"); return; }
     write(store.updateItem(code, editing.id, { ...fields, editedAt: Date.now(), editedBy: me }));
     toast("Modifiche salvate");
   } else {
@@ -202,7 +213,7 @@ $("item-form").addEventListener("submit", e => {
     toast("Aggiunto alla lista");
     if (state.status === "done") { state.status = "todo"; saveFilters(); syncChips(); }
   }
-  sheet.close();
+  closeModal(sheet);
 });
 
 // Prima di aggiungere un doppione: avvisa e propone di segnare "Ci sto" su quella che c'è già.
@@ -217,7 +228,7 @@ function showDup(twin) {
     h("div", { class: "dup-acts" },
       h("button", { class: "btn", type: "button", onclick: () => {
         if (!already && !twin.done) write(store.setInterest(code, twin.id, true));
-        sheet.close();
+        closeModal(sheet);
         toast(twin.done ? "Era già fatta: la trovi tra le Fatte" : already ? "Ci sei già su quella" : `Segnato "Ci sto" su «${twin.title}»`);
       } }, twin.done || already ? "Ok, non aggiungerla" : "Segna \"Ci sto\" su quella"),
       h("button", { class: "btn btn-soft", type: "button", onclick: () => { dupOk = true; $("item-form").requestSubmit(); } }, "Aggiungila lo stesso")));
@@ -433,10 +444,11 @@ $("open-menu").addEventListener("click", () => {
   $("m-name").value = ls.get("pop-name") || "";
   $("m-leave").textContent = "Esci dal gruppo su questo telefono";
   renderMembers(); renderLook(); updateInstall();
-  menu.showModal();
+  openModal(menu);
 });
-$("menu-close").addEventListener("click", () => menu.close());
-menu.addEventListener("click", e => { if (e.target === menu) menu.close(); });
+$("menu-close").addEventListener("click", () => closeModal(menu));
+menu.parentElement.addEventListener("click", e => { if (e.target === menu.parentElement) closeModal(menu); });
+addEventListener("keydown", e => { if (e.key === "Escape") for (const el of [sheet, menu]) if (isOpen(el)) closeModal(el); });
 
 $("m-invite").addEventListener("click", async () => {
   const url = inviteUrl(), text = `Segniamoci i posti da vedere e le cose da fare su Prima o Poi! Codice del gruppo: ${code}`;
@@ -553,16 +565,15 @@ function ensureIdentity() {
   whoTwin = twin;
   $("who-text").textContent = `Nel gruppo c'è già «${members[twin].name}». Sei tu, entrato da un altro telefono o dall'app installata?`;
   $("who-name").value = ""; $("who-msg").textContent = "";
-  $("whoami").showModal();
+  openModal($("whoami"));
 }
-$("whoami").addEventListener("cancel", e => e.preventDefault());   // serve una risposta
 $("who-same").addEventListener("click", async () => {
   const b = $("who-same"); b.disabled = true;
   try {
     const t = members[whoTwin];
     await store.mergeMember(code, whoTwin, t.aliases || [], me, t.name);
     ls.set("pop-name", t.name);
-    $("whoami").close(); toast("Fatto: le tue idee e i tuoi \"Ci sto\" sono sotto un solo nome");
+    closeModal($("whoami")); toast("Fatto: le tue idee e i tuoi \"Ci sto\" sono sotto un solo nome");
   } catch (e) { $("who-msg").textContent = "Non ci sono riuscito: serve la connessione a internet. Riprova."; console.error(e); }
   b.disabled = false;
 });
@@ -572,7 +583,7 @@ $("who-form").addEventListener("submit", e => {
   if (!n) { msg.textContent = "Scrivi un nome."; return; }
   if (findMemberByName(n, me)) { msg.textContent = `Anche «${n}» è già usato nel gruppo: aggiungi l'iniziale del cognome o un soprannome.`; return; }
   ls.set("pop-name", n); write(store.setMember(code, n));
-  $("whoami").close(); toast(`Benvenuto, ${n}!`);
+  closeModal($("whoami")); toast(`Benvenuto, ${n}!`);
 });
 
 function startApp() {
@@ -591,7 +602,7 @@ function startApp() {
     aliasOf = {};
     for (const [id, v] of Object.entries(m)) for (const a of v.aliases || []) if (a !== id) aliasOf[a] = id;
     if (!meta || !meta.fromCache) ensureIdentity();
-    render(); if (menu.open) renderMembers();
+    render(); if (isOpen(menu)) renderMembers();
   }, () => {}));
   if (store.demo) notice(demoNote);
   render();
