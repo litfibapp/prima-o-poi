@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prima o Poi</title>
+<meta name="description" content="La lista condivisa dei posti da vedere e delle cose da fare insieme.">
+<meta name="theme-color" content="#EDF0F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E131A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Prima o Poi">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Schermata: entra o crea un gruppo -->
+<main id="screen-group" class="onboard" hidden>
+  <div class="onboard-card">
+    <h1 class="logo">Prima <span>o</span> Poi</h1>
+    <p class="lead">La lista dei posti da vedere e delle cose da fare con i tuoi amici. Niente iscrizioni: serve solo il codice del gruppo.</p>
+
+    <form id="join-form" class="stack" autocomplete="off">
+      <label class="f" for="join-code">Hai un codice?</label>
+      <input type="text" id="join-code" placeholder="es. gelato-faro-4821" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+      <button class="btn" type="submit">Entra nel gruppo</button>
+      <p class="formmsg" id="join-msg" aria-live="polite"></p>
+    </form>
+
+    <div class="or"><span>oppure</span></div>
+
+    <button class="btn btn-soft" id="create-group" type="button">Crea un nuovo gruppo</button>
+    <p class="hint">Riceverai un codice da mandare ai tuoi amici.</p>
+  </div>
+</main>
+
+<!-- Schermata: come ti chiami -->
+<main id="screen-name" class="onboard" hidden>
+  <form id="name-form" class="onboard-card stack" autocomplete="off">
+    <h1 class="logo">Ciao!</h1>
+    <p class="lead">Come ti chiami? Gli altri del gruppo vedranno questo nome accanto alle tue idee.</p>
+    <input type="text" id="name-input" maxlength="40" placeholder="Il tuo nome" autocomplete="given-name" required>
+    <button class="btn" type="submit">Continua</button>
+    <p class="formmsg" id="name-msg" aria-live="polite"></p>
+  </form>
+</main>
+
+<!-- App -->
+<div id="screen-app" hidden>
+  <header class="bar">
+    <div class="bar-in">
+      <h1 class="logo small">Prima <span>o</span> Poi</h1>
+      <div class="tally" aria-live="polite"><b id="n-todo">0</b> da fare · <b id="n-done">0</b> fatte</div>
+      <button class="icon-btn" id="open-menu" type="button" aria-label="Gruppo e impostazioni">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="page">
+    <div id="notice" class="notice" hidden></div>
+
+    <div class="toolbar">
+      <div class="scroller">
+        <div class="chips" id="status-chips" role="group" aria-label="Stato">
+          <button type="button" data-v="todo">Da fare</button>
+          <button type="button" data-v="done">Fatte</button>
+          <button type="button" data-v="all">Tutte</button>
+        </div>
+        <div class="chips" id="kind-chips" role="group" aria-label="Tipo">
+          <button type="button" data-v="all">Tutto</button>
+          <button type="button" data-v="posto">Posti</button>
+          <button type="button" data-v="attivita">Attività</button>
+        </div>
+      </div>
+      <div class="row">
+        <select id="cat-filter" aria-label="Categoria"></select>
+        <select id="sort" aria-label="Ordina">
+          <option value="top">Più voluti</option>
+          <option value="new">Più recenti</option>
+        </select>
+      </div>
+      <input type="search" id="q" placeholder="Cerca…" aria-label="Cerca">
+    </div>
+
+    <div id="list" class="list"></div>
+    <div id="empty" class="empty">
+      <h3>Sto caricando la lista…</h3>
+      <p>Qui compariranno i posti e le attività del gruppo.</p>
+    </div>
+  </div>
+
+  <button class="fab" id="fab" type="button" aria-label="Aggiungi un'idea"><span aria-hidden="true">+</span> Aggiungi</button>
+</div>
+
+<!-- Foglio: aggiungi / modifica -->
+<dialog id="sheet" class="sheet" aria-labelledby="sheet-title">
+  <form id="item-form" method="dialog" autocomplete="off">
+    <div class="sheet-head">
+      <h2 id="sheet-title">Aggiungi un'idea</h2>
+      <button class="icon-btn" type="button" id="sheet-close" aria-label="Chiudi">✕</button>
+    </div>
+    <div class="sheet-body stack">
+      <label class="f paste" id="paste-wrap">Incolla un link <small>da Google Maps, Apple Mappe o un sito</small>
+        <textarea id="f-paste" rows="2" placeholder="In Maps: Condividi → Copia, poi incolla qui"></textarea>
+        <span class="pastemsg" id="f-pastemsg" aria-live="polite"></span>
+      </label>
+      <div class="seg" role="radiogroup" aria-label="Tipo">
+        <input type="radio" name="kind" id="k-posto" value="posto" checked><label for="k-posto">Un posto</label>
+        <input type="radio" name="kind" id="k-att" value="attivita"><label for="k-att">Un'attività</label>
+      </div>
+      <label class="f">Cosa
+        <input type="text" id="f-title" maxlength="120" placeholder="Es. Rifugio Lagazuoi, karaoke, corso di sushi">
+      </label>
+      <label class="f">Categoria
+        <select id="f-cat"></select>
+      </label>
+      <label class="f">Dove <small>(facoltativo)</small>
+        <input type="text" id="f-where" maxlength="120" placeholder="Es. Cortina d'Ampezzo">
+      </label>
+      <label class="f">Link <small>(facoltativo)</small>
+        <input type="url" id="f-link" maxlength="500" placeholder="https://…" inputmode="url">
+      </label>
+      <label class="f">Note <small>(facoltativo)</small>
+        <textarea id="f-note" maxlength="600" rows="3" placeholder="Periodo migliore, prezzi, chi l'ha consigliato…"></textarea>
+      </label>
+      <p class="formmsg" id="f-msg" aria-live="polite"></p>
+    </div>
+    <div class="sheet-foot">
+      <button class="btn" id="f-submit" type="submit">Aggiungi alla lista</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Foglio: gruppo e impostazioni -->
+<dialog id="menu" class="sheet" aria-labelledby="menu-title">
+  <div class="sheet-head">
+    <h2 id="menu-title">Il tuo gruppo</h2>
+    <button class="icon-btn" type="button" id="menu-close" aria-label="Chiudi">✕</button>
+  </div>
+  <div class="sheet-body stack">
+    <div class="codebox">
+      <span class="lbl">Codice del gruppo</span>
+      <code id="m-code"></code>
+    </div>
+    <button class="btn" id="m-invite" type="button">Invita amici</button>
+    <p class="hint" id="m-invite-msg">Manda il link su WhatsApp o dove vuoi: chi lo apre entra subito nel gruppo.</p>
+
+    <div class="members">
+      <span class="lbl">Nel gruppo</span>
+      <ul id="m-members"></ul>
+    </div>
+
+    <form id="rename-form" class="stack" autocomplete="off">
+      <label class="f" for="m-name">Il tuo nome</label>
+      <div class="inline">
+        <input type="text" id="m-name" maxlength="40" required>
+        <button class="btn btn-soft" type="submit">Salva</button>
+      </div>
+    </form>
+
+    <div class="install" id="m-install">
+      <span class="lbl">Mettila sulla schermata Home</span>
+      <p id="m-install-text"></p>
+      <button class="btn btn-soft" id="m-install-btn" type="button" hidden>Installa l'app</button>
+    </div>
+
+    <button class="btn btn-ghost" id="m-leave" type="button">Esci dal gruppo su questo telefono</button>
+  </div>
+</dialog>
+
+<div id="toast" class="toast" hidden role="status"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

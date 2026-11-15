@@ -1,0 +1,57 @@
+rules_version = '2';
+
+// Regole di sicurezza di Prima o Poi.
+// Ognuno entra con un accesso anonimo (nessuna iscrizione). Il codice del gruppo
+// fa da chiave: chi lo conosce legge e modifica la lista di quel gruppo,
+// e nessuno può elencare i gruppi esistenti per scoprirne i codici.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    function str(d, k, max) { return d[k] is string && d[k].size() <= max; }
+
+    function validItem(d) {
+      return d.keys().hasOnly(['title', 'kind', 'category', 'where', 'link', 'note', 'by', 'createdAt',
+                                'done', 'doneAt', 'doneBy', 'interested', 'editedAt'])
+        && str(d, 'title', 120) && d.title.size() > 0
+        && d.kind in ['posto', 'attivita']
+        && str(d, 'category', 20)
+        && str(d, 'where', 120)
+        && str(d, 'link', 500)
+        && str(d, 'note', 600)
+        && d.done is bool
+        && d.interested is map && d.interested.size() <= 100;
+    }
+
+    match /groups/{code} {
+      // Si può controllare se un codice esiste, ma non elencare tutti i gruppi.
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && code.size() >= 8 && code.size() <= 60;
+      allow update, delete: if false;
+
+      match /items/{itemId} {
+        allow read: if signedIn() && exists(/databases/$(database)/documents/groups/$(code));
+        allow create: if signedIn() && exists(/databases/$(database)/documents/groups/$(code))
+                      && request.resource.data.by == request.auth.uid
+                      && validItem(request.resource.data);
+        allow update: if signedIn() && validItem(request.resource.data)
+                      && request.resource.data.by == resource.data.by
+                      && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if signedIn();
+      }
+
+      match /members/{uid} {
+        allow read: if signedIn() && exists(/databases/$(database)/documents/groups/$(code));
+        allow write: if signedIn() && request.auth.uid == uid
+                     && exists(/databases/$(database)/documents/groups/$(code))
+                     && request.resource.data.keys().hasOnly(['name', 'updatedAt'])
+                     && request.resource.data.name is string
+                     && request.resource.data.name.size() > 0
+                     && request.resource.data.name.size() <= 40;
+      }
+    }
+  }
+}
