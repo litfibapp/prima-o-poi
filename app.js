@@ -40,6 +40,7 @@ function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = fals
 function notice(msg) { $("notice").textContent = msg || ""; $("notice").hidden = !msg; }
 function show(screen) { for (const s of ["screen-group", "screen-name", "screen-app"]) $(s).hidden = s !== screen; }
 const fmtDate = ms => new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" }).format(new Date(ms));
+const fmtWhen = ms => new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(ms));
 // La stessa persona può avere più identificativi (nomi uniti): canon() li riporta tutti a quello principale.
 let aliasOf = {};
 const canon = id => aliasOf[id] || id;
@@ -190,7 +191,9 @@ $("item-form").addEventListener("submit", e => {
     where: $("f-where").value.trim(), link: link || "", note: $("f-note").value.trim(),
   };
   if (editing) {
-    write(store.updateItem(code, editing.id, { ...fields, editedAt: Date.now() }));
+    const changed = Object.keys(fields).some(k => (fields[k] || "") !== (editing[k] || ""));
+    if (!changed) { sheet.close(); toast("Nessuna modifica"); return; }
+    write(store.updateItem(code, editing.id, { ...fields, editedAt: Date.now(), editedBy: me }));
     toast("Modifiche salvate");
   } else {
     const twin = !dupOk && items.find(x => sameIdea(x, fields));
@@ -235,7 +238,7 @@ async function mergeIdeas(g) {
     where: keep.where || (g.find(x => x.where) || {}).where || "",
     link: keep.link || (g.find(x => x.link) || {}).link || "",
     done: doneOnes.length > 0, doneAt: doneOnes.length ? doneOnes[0].doneAt || null : null, doneBy: doneOnes.length ? doneOnes[0].doneBy || null : null,
-    editedAt: Date.now(),
+    editedAt: Date.now(), editedBy: me,
   };
   try { await store.mergeItems(code, keep.id, patch, rest.map(x => x.id)); toast(`Unite le ${g.length} copie di «${keep.title}»`); }
   catch (e) { onWriteError(e); }
@@ -320,7 +323,8 @@ function card(it) {
       it.where && h("div", { class: "where" }, h("span", null, it.where), maps && h("a", { href: maps, target: "_blank", rel: "noopener noreferrer" }, "Mappa")),
       it.note && h("p", { class: "note" }, it.note),
       link && h("div", { class: "link" }, h("a", { href: link, target: "_blank", rel: "noopener noreferrer" }, hostOf(link) + " ↗")),
-      h("div", { class: "by" }, "Aggiunta da " + (it.by ? nameOf(it.by) : "qualcuno") + (it.createdAt ? " · " + fmtDate(it.createdAt) : ""))),
+      h("div", { class: "by" }, "Aggiunta da " + (it.by ? nameOf(it.by) : "qualcuno") + (it.createdAt ? " · " + fmtDate(it.createdAt) : "")),
+      it.editedAt && h("div", { class: "by edited" }, (it.editedBy ? "Modificata da " + nameOf(it.editedBy) + " · " : "Modificata il ") + fmtWhen(it.editedAt))),
     h("div", { class: "stub" },
       h("div", { class: "who", title: fanIds.length ? "Ci stanno: " + fanIds.map(nameOf).join(", ") : null, "aria-label": fanIds.length ? "Ci stanno: " + fanIds.map(nameOf).join(", ") : "Nessuno ancora", role: "group" },
         fanIds.length > 0 && h("div", { class: "faces" }, fanIds.slice(0, 4).map(face)),

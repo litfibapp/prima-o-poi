@@ -16,6 +16,7 @@ function remapPatch(v, fromIds, intoId, del) {
     if (fromIds.includes(k) && v.interested[k]) { patch[`interested.${k}`] = del; patch[`interested.${intoId}`] = true; }
   }
   if (fromIds.includes(v.doneBy)) patch.doneBy = intoId;
+  if (fromIds.includes(v.editedBy)) patch.editedBy = intoId;
   return patch;
 }
 
@@ -108,6 +109,7 @@ export async function createFirebaseStore(config) {
         const patch = {};
         for (const k of Object.keys(v.interested || {})) if (myIds.includes(k)) patch[`interested.${k}`] = fs.deleteField();
         if (myIds.includes(v.doneBy)) patch.doneBy = null;
+        if (myIds.includes(v.editedBy)) patch.editedBy = null;
         if (Object.keys(patch).length) batch.update(d.ref, patch);
       });
       for (const id of memberDocs) batch.delete(member(code, id));
@@ -179,6 +181,7 @@ export function createDemoStore() {
         if (myIds.includes(it.by)) { delete g.items[id]; continue; }
         for (const k of Object.keys(it.interested || {})) if (myIds.includes(k)) delete it.interested[k];
         if (myIds.includes(it.doneBy)) it.doneBy = null;
+        if (myIds.includes(it.editedBy)) it.editedBy = null;
       }
       for (const id of memberDocs) delete g.members[id];
     }),

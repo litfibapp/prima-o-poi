@@ -230,3 +230,4 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 .dupbox { background: var(--sun-soft); border: 1.5px solid var(--sun); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
 .dupbox p { margin: 0; font-size: 15px; }
 .dup-acts { display: flex; flex-direction: column; gap: 8px; }
+.by.edited { font-style: italic; }

@@ -14,7 +14,7 @@ service cloud.firestore {
 
     function validItem(d) {
       return d.keys().hasOnly(['title', 'kind', 'category', 'where', 'link', 'note', 'by', 'createdAt',
-                                'done', 'doneAt', 'doneBy', 'interested', 'editedAt'])
+                                'done', 'doneAt', 'doneBy', 'interested', 'editedAt', 'editedBy'])
         && str(d, 'title', 120) && d.title.size() > 0
         && d.kind in ['posto', 'attivita']
         && str(d, 'category', 20)
