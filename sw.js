@@ -1,6 +1,6 @@
 // Service worker: tiene in memoria i file dell'app così si apre anche con poca rete.
 // Quando cambi i file, aumenta VERSION per far aggiornare i telefoni.
-const VERSION = "pop-v5";
+const VERSION = "pop-v6";
 const SHELL = ["./", "index.html", "privacy.html", "style.css", "app.js", "store.js", "firebase-config.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
   "fonts/fredoka-latin.woff2", "fonts/nunito-latin.woff2", "images/gruppo.webp", "images/asino.webp"];

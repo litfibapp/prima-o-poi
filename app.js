@@ -43,7 +43,7 @@ const fmtDate = ms => new Intl.DateTimeFormat("it-IT", { day: "numeric", month: 
 const fans = it => Object.entries(it.interested || {}).filter(([, v]) => v).map(([k]) => k);
 const safeUrl = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : null; } catch (e) { return null; } };
 const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; } };
-const normCode = s => s.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").slice(0, 60);
+const normCode = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").slice(0, 60);
 const nameOf = id => (id === me ? "te" : (members[id] && members[id].name) || "un amico");
 function colorOf(id) { let x = 0; for (const c of id || "") x = (x * 31 + c.charCodeAt(0)) >>> 0; return `hsl(${x % 360} 55% 45%)`; }
 function initials(id) {
@@ -338,15 +338,43 @@ async function joinGroup(raw, auto) {
   ls.set("pop-group", c); code = c; afterGroup();
 }
 $("join-form").addEventListener("submit", e => { e.preventDefault(); joinGroup($("join-code").value); });
-$("create-group").addEventListener("click", async () => {
-  const b = $("create-group"); b.disabled = true;
+// Creazione: chi crea il gruppo sceglie il codice, nello schema parola-parola-1234.
+const CODE_RE = /^([a-z]{2,20})-([a-z]{2,20})-(\d{4})$/;
+function checkCode(c) {
+  if (!c) return "Scrivi un codice.";
+  if (!CODE_RE.test(c)) return "Il codice deve avere due parole e quattro cifre: parola-parola-1234, per esempio pizza-faro-2718.";
+  const [, w1, w2, digits] = c.match(CODE_RE);
+  if (w1 === w2) return "Usa due parole diverse.";
+  if (/^(\d)\1{3}$/.test(digits) || "0123456789".includes(digits) || "9876543210".includes(digits)) return "Le cifre sono troppo facili da indovinare: evita 1234, 0000 e simili.";
+  return "";
+}
+function showCreate(on) {
+  $("choose").hidden = on; $("create-form").hidden = !on;
+  $("create-msg").textContent = "";
+  if (on) { $("create-code").value = newCode(); $("create-code").focus(); $("create-code").select(); }
+}
+$("create-group").addEventListener("click", () => showCreate(true));
+$("create-cancel").addEventListener("click", () => showCreate(false));
+$("create-shuffle").addEventListener("click", () => { $("create-code").value = newCode(); $("create-msg").textContent = ""; });
+$("create-code").addEventListener("blur", () => { const v = $("create-code").value; if (v.trim()) $("create-code").value = normCode(v); });
+$("create-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const c = normCode($("create-code").value), msg = $("create-msg"), b = $("create-submit");
+  $("create-code").value = c;
+  const problem = checkCode(c);
+  if (problem) { msg.textContent = problem; $("create-code").focus(); return; }
+  b.disabled = true; msg.textContent = "";
   try {
-    let c = newCode();
-    if (await store.groupExists(c)) c = newCode();
+    if (await store.groupExists(c)) { msg.textContent = "Questo codice è già usato da un altro gruppo: cambiane una parte o tocca ↻."; return; }
     await store.createGroup(c);
     ls.set("pop-group", c); code = c; afterGroup();
-  } catch (e) { $("join-msg").textContent = "Non sono riuscito a creare il gruppo: serve la connessione a internet."; console.error(e); }
-  b.disabled = false;
+  } catch (err) {
+    console.error(err);
+    // Se un altro gruppo lo ha preso nello stesso istante, le regole rifiutano la creazione.
+    msg.textContent = err && err.code === "permission-denied"
+      ? "Questo codice è già usato da un altro gruppo: cambiane una parte o tocca ↻."
+      : "Non sono riuscito a creare il gruppo: serve la connessione a internet.";
+  } finally { b.disabled = false; }
 });
 function afterGroup() {
   if (ls.get("pop-name")) startApp();

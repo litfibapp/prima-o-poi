@@ -26,17 +26,32 @@
     <img class="hero" src="images/gruppo.webp" width="637" height="632" alt="Il disegno del gruppo: asinelli blu che volano con le eliche nel cielo, uno con la corona d'alloro e il maglione.">
     <h1 class="logo">Prima <span>o</span> Poi</h1>
 
-    <form id="join-form" class="stack" autocomplete="off">
-      <label class="f" for="join-code">Hai un codice?</label>
-      <input type="text" id="join-code" placeholder="es. gelato-faro-4821" autocapitalize="none" autocorrect="off" spellcheck="false" required>
-      <button class="btn" type="submit">Entra nel gruppo</button>
-      <p class="formmsg" id="join-msg" aria-live="polite"></p>
+    <div id="choose" class="stack">
+      <form id="join-form" class="stack" autocomplete="off">
+        <label class="f" for="join-code">Hai un codice?</label>
+        <input type="text" id="join-code" placeholder="es. gelato-faro-4821" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+        <button class="btn" type="submit">Entra nel gruppo</button>
+        <p class="formmsg" id="join-msg" aria-live="polite"></p>
+      </form>
+
+      <div class="or"><span>oppure</span></div>
+
+      <button class="btn btn-soft" id="create-group" type="button">Crea un nuovo gruppo</button>
+      <p class="hint">Scegli tu il codice da mandare ai tuoi amici.</p>
+    </div>
+
+    <form id="create-form" class="stack" autocomplete="off" hidden>
+      <label class="f" for="create-code">Scegli il codice del gruppo</label>
+      <div class="inline">
+        <input type="text" id="create-code" maxlength="45" autocapitalize="none" autocorrect="off" spellcheck="false" required aria-describedby="create-help">
+        <button class="btn btn-soft dice" type="button" id="create-shuffle" aria-label="Proponi un altro codice" title="Proponi un altro codice">↻</button>
+      </div>
+      <p class="hint" id="create-help">Due parole e quattro cifre, separate da trattini: <strong>parola-parola-1234</strong>. Evita codici facili da indovinare, come i nomi del gruppo o 1234: chi indovina il codice può entrare.</p>
+      <button class="btn" type="submit" id="create-submit">Crea il gruppo</button>
+      <button class="btn btn-ghost-plain" type="button" id="create-cancel">Indietro</button>
+      <p class="formmsg" id="create-msg" aria-live="polite"></p>
     </form>
 
-    <div class="or"><span>oppure</span></div>
-
-    <button class="btn btn-soft" id="create-group" type="button">Crea un nuovo gruppo</button>
-    <p class="hint">Riceverai un codice da mandare ai tuoi amici.</p>
     <a class="legal" href="privacy.html">Privacy e regole d'uso</a>
   </div>
 </main>
