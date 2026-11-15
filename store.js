@@ -50,6 +50,23 @@ export async function createFirebaseStore(config) {
     updateItem: (code, id, patch) => fs.updateDoc(item(code, id), patch),
     setInterest: (code, id, on) => fs.updateDoc(item(code, id), { [`interested.${uid}`]: on ? true : fs.deleteField() }),
     deleteItem: (code, id) => fs.deleteDoc(item(code, id)),
+    // Cancella dal gruppo tutto ciò che riguarda questa persona: le idee che ha aggiunto,
+    // i suoi "Ci sto", il suo nome. Poi elimina l'accesso anonimo.
+    async deleteMyData(code) {
+      const snap = await fs.getDocs(items(code));
+      const batch = fs.writeBatch(db);
+      snap.docs.forEach(d => {
+        const v = d.data();
+        if (v.by === uid) { batch.delete(d.ref); return; }
+        const patch = {};
+        if (v.interested && v.interested[uid]) patch[`interested.${uid}`] = fs.deleteField();
+        if (v.doneBy === uid) patch.doneBy = null;
+        if (Object.keys(patch).length) batch.update(d.ref, patch);
+      });
+      batch.delete(member(code, uid));
+      await batch.commit();
+      try { await auth.currentUser.delete(); } catch (e) {}
+    },
   };
 }
 
@@ -88,5 +105,13 @@ export function createDemoStore() {
       it.interested ||= {}; if (on) it.interested[uid] = true; else delete it.interested[uid];
     }),
     deleteItem: (code, id) => mutate(code, g => { delete g.items[id]; }),
+    deleteMyData: code => mutate(code, g => {
+      for (const [id, it] of Object.entries(g.items)) {
+        if (it.by === uid) { delete g.items[id]; continue; }
+        if (it.interested) delete it.interested[uid];
+        if (it.doneBy === uid) it.doneBy = null;
+      }
+      delete g.members[uid];
+    }),
   };
 }

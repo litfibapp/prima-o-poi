@@ -1,4 +1,15 @@
 /* Prima o Poi — pensata prima di tutto per il telefono: una colonna di biglietti, filtri che scorrono, pulsante "Aggiungi" in basso. */
+
+/* Font ospitati sul sito (licenza SIL OFL, vedi fonts/): nessuna richiesta a Google Fonts. */
+@font-face {
+  font-family: "Bricolage Grotesque"; font-style: normal; font-weight: 200 800; font-display: swap;
+  src: url("fonts/bricolage-grotesque-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Figtree"; font-style: normal; font-weight: 300 900; font-display: swap;
+  src: url("fonts/figtree-latin.woff2") format("woff2");
+}
+
 :root {
   --bg: #EDF0F4;
   --surface: #FFFFFF;
@@ -12,7 +23,7 @@
   --sun: #F2B526;
   --sun-ink: #382800;
   --sun-soft: #FDF1CF;
-  --done: #23804F;
+  --done: #1A6B42;
   --done-soft: #DDF2E6;
   --danger: #C2362F;
   --shadow: 0 1px 2px rgba(21,32,44,.06), 0 4px 14px rgba(21,32,44,.07);
@@ -169,7 +180,12 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 .members .face { margin: 0; width: 24px; height: 24px; border: 0; font-size: 10px; }
 .inline { display: flex; gap: 8px; }
 .inline input { flex: 1; min-width: 0; }
-.install p { margin: 4px 0 8px; font-size: 14px; color: var(--muted); }
+.install p, .mydata p { margin: 4px 0 8px; font-size: 14px; color: var(--muted); }
+.mydata { display: flex; flex-direction: column; border-top: 1px solid var(--line); padding-top: 14px; }
+.btn-danger { background: none; color: var(--danger); border: 1px solid var(--danger); }
+.btn-danger.arm { background: var(--danger); color: #fff; }
+.legal { font-size: 14px; color: var(--muted); text-align: center; text-decoration: underline; text-underline-offset: 3px; }
+.hint a { color: var(--accent); }
 
 .toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 16px; border-radius: 12px; font-size: 15px; box-shadow: var(--shadow); max-width: calc(100% - 32px); z-index: 30; text-align: center; }
 

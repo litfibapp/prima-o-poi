@@ -58,3 +58,13 @@ Il piano gratuito (Spark) basta e avanza per un gruppo di amici: non serve inser
 | `firebase-config.js` | Le chiavi del tuo progetto Firebase |
 | `firestore.rules` | Le regole di sicurezza da incollare in Firebase |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Installazione sul telefono e "Condividi" su Android |
+| `privacy.html` | Privacy e regole d'uso, collegata dall'app |
+| `fonts/` | I caratteri ospitati sul sito, con le loro licenze (SIL OFL) |
+
+## Privacy e conformità
+
+- **Dati minimi**: solo un nome o soprannome e le idee del gruppo. Nessuna email, telefono o posizione.
+- **Nessun servizio di terze parti oltre al necessario**: Firebase (database e accesso anonimo) e GitHub Pages. Niente Analytics, pubblicità o Google Fonts.
+- **Niente banner dei cookie**: l'app usa solo la memoria tecnica del browser, necessaria per funzionare.
+- **Cancellazione dei dati**: menu ⋯ → *Elimina i miei dati*.
+- Se cambi qualcosa che riguarda i dati (per esempio aggiungi statistiche), aggiorna anche `privacy.html`.

@@ -45,7 +45,9 @@ service cloud.firestore {
 
       match /members/{uid} {
         allow read: if signedIn() && exists(/databases/$(database)/documents/groups/$(code));
-        allow write: if signedIn() && request.auth.uid == uid
+        // Ognuno può cancellare il proprio nome ("Elimina i miei dati").
+        allow delete: if signedIn() && request.auth.uid == uid;
+        allow create, update: if signedIn() && request.auth.uid == uid
                      && exists(/databases/$(database)/documents/groups/$(code))
                      && request.resource.data.keys().hasOnly(['name', 'updatedAt'])
                      && request.resource.data.name is string

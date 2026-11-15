@@ -14,9 +14,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="preload" href="fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -38,6 +36,7 @@
 
     <button class="btn btn-soft" id="create-group" type="button">Crea un nuovo gruppo</button>
     <p class="hint">Riceverai un codice da mandare ai tuoi amici.</p>
+    <a class="legal" href="privacy.html">Privacy e regole d'uso</a>
   </div>
 </main>
 
@@ -49,6 +48,7 @@
     <input type="text" id="name-input" maxlength="40" placeholder="Il tuo nome" autocomplete="given-name" required>
     <button class="btn" type="submit">Continua</button>
     <p class="formmsg" id="name-msg" aria-live="polite"></p>
+    <p class="hint">Basta un nome o un soprannome: lo vede solo chi è nel gruppo. Puoi cancellarlo quando vuoi dal menu ⋯. <a href="privacy.html">Privacy e regole d'uso</a></p>
   </form>
 </main>
 
@@ -173,6 +173,15 @@
     </div>
 
     <button class="btn btn-ghost" id="m-leave" type="button">Esci dal gruppo su questo telefono</button>
+
+    <div class="mydata">
+      <span class="lbl">I tuoi dati</span>
+      <p>Cancella da questo gruppo il tuo nome, le idee che hai aggiunto tu e i tuoi "Ci sto". Le idee degli altri restano. Non si può annullare.</p>
+      <button class="btn btn-danger" id="m-delete" type="button">Elimina i miei dati</button>
+      <p class="formmsg" id="m-delete-msg" aria-live="polite"></p>
+    </div>
+
+    <a class="legal" href="privacy.html">Privacy e regole d'uso</a>
   </div>
 </dialog>
 

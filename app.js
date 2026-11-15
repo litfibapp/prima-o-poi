@@ -50,7 +50,8 @@ function initials(id) {
   const n = (members[id] && members[id].name) || "?";
   return n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("") || "?";
 }
-const face = id => h("span", { class: "face", style: `background:${colorOf(id)}`, title: nameOf(id) }, initials(id));
+// Le iniziali sono decorative: il nome completo è già nel testo accanto (o nel title del gruppo di facce).
+const face = id => h("span", { class: "face", style: `background:${colorOf(id)}`, title: nameOf(id), "aria-hidden": "true" }, initials(id));
 function newCode() {
   const r = new Uint32Array(3); crypto.getRandomValues(r);
   return `${WORDS[r[0] % WORDS.length]}-${WORDS[r[1] % WORDS.length]}-${String(1000 + (r[2] % 9000))}`;
@@ -239,7 +240,7 @@ function card(it) {
       link && h("div", { class: "link" }, h("a", { href: link, target: "_blank", rel: "noopener noreferrer" }, hostOf(link) + " ↗")),
       h("div", { class: "by" }, "Aggiunta da " + (it.by ? nameOf(it.by) : "qualcuno") + (it.createdAt ? " · " + fmtDate(it.createdAt) : ""))),
     h("div", { class: "stub" },
-      h("div", { class: "who", title: fanIds.length ? "Ci stanno: " + fanIds.map(nameOf).join(", ") : null },
+      h("div", { class: "who", title: fanIds.length ? "Ci stanno: " + fanIds.map(nameOf).join(", ") : null, "aria-label": fanIds.length ? "Ci stanno: " + fanIds.map(nameOf).join(", ") : "Nessuno ancora", role: "group" },
         fanIds.length > 0 && h("div", { class: "faces" }, fanIds.slice(0, 4).map(face)),
         h("span", { class: "count" }, fanIds.length ? [h("b", null, fanIds.length), fanIds.length === 1 ? " ci sta" : " ci stanno"] : "Nessuno ancora")),
       h("div", { class: "acts" },
@@ -304,6 +305,28 @@ $("m-leave").addEventListener("click", () => {
   ls.del("pop-group"); location.href = location.pathname;
 });
 
+let deleteArmed = false;
+$("m-delete").addEventListener("click", async () => {
+  const b = $("m-delete"), msg = $("m-delete-msg");
+  if (!deleteArmed) {
+    deleteArmed = true; b.classList.add("arm"); b.textContent = "Tocca di nuovo per eliminare tutto";
+    setTimeout(() => { if (deleteArmed) { deleteArmed = false; b.classList.remove("arm"); b.textContent = "Elimina i miei dati"; } }, 5000);
+    return;
+  }
+  deleteArmed = false; b.disabled = true; b.textContent = "Sto eliminando…"; msg.textContent = "";
+  try {
+    unsub.forEach(f => f()); unsub = [];
+    await store.deleteMyData(code);
+    for (const k of ["pop-group", "pop-name", "pop-filters"]) ls.del(k);
+    location.href = location.pathname + "?eliminato=1";
+  } catch (e) {
+    console.error(e);
+    b.disabled = false; b.classList.remove("arm"); b.textContent = "Elimina i miei dati";
+    msg.textContent = "Non sono riuscito a eliminare i dati: serve la connessione a internet. Riprova.";
+    startApp();
+  }
+});
+
 // ---------- onboarding
 async function joinGroup(raw, auto) {
   const c = normCode(raw), msg = $("join-msg");
@@ -365,7 +388,9 @@ async function boot() {
   const shared = ["title", "text", "url"].map(k => params.get(k)).filter(Boolean).join("\n");
   if (shared) { try { sessionStorage.setItem("pop-share", shared); } catch (e) {} }
   const invite = params.get("g");
-  if (shared || invite) history.replaceState(null, "", location.pathname);
+  const deleted = params.has("eliminato");
+  if (shared || invite || deleted) history.replaceState(null, "", location.pathname);
+  if (deleted) setTimeout(() => toast("I tuoi dati sono stati eliminati."), 300);
 
   const configured = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "INCOLLA_QUI";
   try { store = configured ? await createFirebaseStore(firebaseConfig) : createDemoStore(); }
