@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Prima o Poi</title>
 <meta name="description" content="La lista condivisa dei posti da vedere e delle cose da fare insieme.">
-<meta name="theme-color" content="#5FA9B8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1D4654" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" id="theme-color" content="#5FA9B8">
+<script>
+  // Tema scelto nel menu (chiaro di base), applicato prima che la pagina si disegni
+  try { document.documentElement.dataset.theme = localStorage.getItem("pop-theme") || "light"; }
+  catch (e) { document.documentElement.dataset.theme = "light"; }
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Prima o Poi">
@@ -186,6 +190,27 @@
         <button class="btn btn-soft" type="submit">Salva</button>
       </div>
     </form>
+
+    <div class="look">
+      <span class="lbl">Aspetto su questo telefono</span>
+      <fieldset>
+        <legend>Tema</legend>
+        <div class="seg3">
+          <input type="radio" name="theme" id="t-light" value="light"><label for="t-light">Chiaro</label>
+          <input type="radio" name="theme" id="t-dark" value="dark"><label for="t-dark">Scuro</label>
+          <input type="radio" name="theme" id="t-auto" value="auto"><label for="t-auto">Automatico</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Colore dei posti</legend>
+        <div class="swatches" id="sw-posto"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Colore delle attività</legend>
+        <div class="swatches" id="sw-attivita"></div>
+      </fieldset>
+      <div class="preview" aria-hidden="true"><span class="pill posto">Posto</span><span class="pill attivita">Attività</span></div>
+    </div>
 
     <div class="install" id="m-install">
       <span class="lbl">Mettila sulla schermata Home</span>

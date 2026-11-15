@@ -312,7 +312,7 @@ function card(it) {
   const link = it.link ? safeUrl(it.link) : null;
   const maps = it.where ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent((it.title ? it.title + ", " : "") + it.where) : null;
   const isArmed = armed.has(it.id);
-  return h("article", { class: "card" + (it.done ? " is-done" : "") },
+  return h("article", { class: "card k-" + (it.kind === "attivita" ? "attivita" : "posto") + (it.done ? " is-done" : "") },
     it.done && h("div", { class: "stamp", title: it.doneBy ? "Segnato da " + nameOf(it.doneBy) : null }, "Fatto" + (it.doneAt ? " · " + fmtDate(it.doneAt) : "")),
     !it.done && h("button", { class: "edit", type: "button", onclick: () => openSheet(it) }, "Modifica"),
     h("div", { class: "top" },
@@ -334,6 +334,49 @@ function card(it) {
         h("button", { class: "ghost ok", type: "button", onclick: () => toggleDone(it) }, it.done ? "Riapri" : "Fatto"),
         h("button", { class: "ghost del" + (isArmed ? " arm" : ""), type: "button", "aria-label": "Elimina", onclick: () => askDelete(it) }, isArmed ? "Elimina?" : "✕"))));
 }
+
+// ---------- aspetto: tema e colori (preferenze di questo telefono)
+const PALETTE = [
+  { id: "cielo", name: "Azzurro cielo", bg: "#5FA9B8", ink: "#0F2F3A" },
+  { id: "ardesia", name: "Blu asinello", bg: "#3B5D70", ink: "#FFFFFF" },
+  { id: "alloro", name: "Verde alloro", bg: "#4C7A2E", ink: "#FFFFFF" },
+  { id: "sole", name: "Giallo sole", bg: "#E8B93A", ink: "#2A1E00" },
+  { id: "corallo", name: "Corallo", bg: "#B84A33", ink: "#FFFFFF" },
+  { id: "rosa", name: "Rosa", bg: "#B44F80", ink: "#FFFFFF" },
+  { id: "viola", name: "Viola", bg: "#6E5BA8", ink: "#FFFFFF" },
+  { id: "sabbia", name: "Sabbia", bg: "#E4D5B4", ink: "#3A2E16" },
+];
+const LOOK_DEFAULT = { posto: "cielo", attivita: "alloro" };
+let look = { ...LOOK_DEFAULT };
+try { Object.assign(look, JSON.parse(ls.get("pop-colors") || "{}")); } catch (e) {}
+const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+function applyLook() {
+  const theme = ls.get("pop-theme") || "light";
+  document.documentElement.dataset.theme = theme;
+  const dark = theme === "dark" || (theme === "auto" && darkQuery.matches);
+  $("theme-color").setAttribute("content", dark ? "#1D4654" : "#5FA9B8");
+  const pick = id => PALETTE.find(p => p.id === id) || PALETTE[0];
+  const s = document.documentElement.style, p = pick(look.posto), a = pick(look.attivita);
+  s.setProperty("--c-posto", p.bg); s.setProperty("--c-posto-ink", p.ink);
+  s.setProperty("--c-att", a.bg); s.setProperty("--c-att-ink", a.ink);
+}
+darkQuery.addEventListener("change", applyLook);
+function renderLook() {
+  const theme = ls.get("pop-theme") || "light";
+  for (const r of document.querySelectorAll('input[name="theme"]')) r.checked = r.value === theme;
+  for (const kind of ["posto", "attivita"]) {
+    $("sw-" + kind).replaceChildren(...PALETTE.flatMap(p => {
+      const id = `sw-${kind}-${p.id}`;
+      const input = h("input", { type: "radio", name: "sw-" + kind, id, value: p.id });
+      input.checked = look[kind] === p.id;
+      input.addEventListener("change", () => { look[kind] = p.id; ls.set("pop-colors", JSON.stringify(look)); applyLook(); render(); });
+      return [input, h("label", { for: id, title: p.name, "aria-label": p.name, style: `background:${p.bg};color:${p.ink}` }, h("span", { "aria-hidden": "true" }, "✓"))];
+    }));
+  }
+}
+for (const r of document.querySelectorAll('input[name="theme"]'))
+  r.addEventListener("change", () => { ls.set("pop-theme", r.value); applyLook(); });
+applyLook();
 
 // ---------- menu
 const menu = $("menu");
@@ -389,7 +432,7 @@ $("open-menu").addEventListener("click", () => {
   $("m-code").textContent = code;
   $("m-name").value = ls.get("pop-name") || "";
   $("m-leave").textContent = "Esci dal gruppo su questo telefono";
-  renderMembers(); updateInstall();
+  renderMembers(); renderLook(); updateInstall();
   menu.showModal();
 });
 $("menu-close").addEventListener("click", () => menu.close());

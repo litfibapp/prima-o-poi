@@ -40,9 +40,19 @@
   --gut-r: max(16px, env(safe-area-inset-right, 0px));
   color-scheme: light;
 }
+/* Tema: chiaro di base. "Scuro" lo forza, "Automatico" segue il telefono (data-theme su <html>, scelto nel menu). */
+:root[data-theme="dark"] {
+  /* la stessa scena, di notte */
+  --sky: #1D4654; --sky-ink: #EAF4F5; --cloud: #23505F;
+  --bg: #0E2129; --surface: #17303A; --surface-2: #1C3843; --ink: #EAF3F4; --muted: #9DB6BD; --line: #2A4752;
+  --accent: #A7C8DA; --accent-ink: #0C2430; --accent-soft: #22404D;
+  --sun: #9CC77A; --sun-ink: #13240A; --sun-soft: #25391F;
+  --done: #A9D4E3; --done-soft: #183A47; --cream: #EADFC6;
+  --danger: #FF8A80; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.28);
+  color-scheme: dark;
+}
 @media (prefers-color-scheme: dark) {
-  :root {
-    /* la stessa scena, di notte */
+  :root[data-theme="auto"] {
     --sky: #1D4654; --sky-ink: #EAF4F5; --cloud: #23505F;
     --bg: #0E2129; --surface: #17303A; --surface-2: #1C3843; --ink: #EAF3F4; --muted: #9DB6BD; --line: #2A4752;
     --accent: #A7C8DA; --accent-ink: #0C2430; --accent-soft: #22404D;
@@ -52,6 +62,9 @@
     color-scheme: dark;
   }
 }
+
+/* Colori di posti e attività: scelti nel menu (app.js li scrive su <html>) */
+:root { --c-posto: #5FA9B8; --c-posto-ink: #0F2F3A; --c-att: #4C7A2E; --c-att-ink: #FFFFFF; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -130,8 +143,10 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); display: flex; flex-direction: column; min-width: 0; position: relative; overflow: hidden; }
 .card .top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 14px 16px 0; padding-right: 110px; }
 .pill { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; }
-.pill.posto { background: var(--accent-soft); color: var(--accent); }
-.pill.attivita { background: var(--sun-soft); color: var(--ink); }
+.pill.posto { background: var(--c-posto); color: var(--c-posto-ink); }
+.card.k-posto { border-top: 6px solid var(--c-posto); }
+.card.k-attivita { border-top: 6px solid var(--c-att); }
+.pill.attivita { background: var(--c-att); color: var(--c-att-ink); }
 .cat { font-size: 13px; color: var(--muted); }
 .card h3 { font-size: 20px; font-weight: 700; line-height: 1.2; padding: 8px 16px 0; overflow-wrap: anywhere; }
 .body { padding: 6px 16px 14px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; flex: 1; }
@@ -231,3 +246,20 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 .dupbox p { margin: 0; font-size: 15px; }
 .dup-acts { display: flex; flex-direction: column; gap: 8px; }
 .by.edited { font-style: italic; }
+
+/* Aspetto: tema e colori */
+.look { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+.look fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.look legend { padding: 0; margin-bottom: 6px; font-size: 13px; font-weight: 800; color: var(--muted); }
+.seg3 { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface-2); border: 1.5px solid var(--line); border-radius: 999px; padding: 3px; gap: 3px; }
+.seg3 input, .swatches input { position: absolute; opacity: 0; pointer-events: none; }
+.seg3 label { text-align: center; padding: 8px 4px; border-radius: 999px; cursor: pointer; font-weight: 800; font-size: 14px; color: var(--muted); }
+.seg3 input:checked + label { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.seg3 input:focus-visible + label { outline: 3px solid var(--accent); }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatches label { width: 33px; height: 33px; border-radius: 50%; cursor: pointer; display: grid; place-items: center; border: 3px solid var(--surface); box-shadow: 0 0 0 1.5px var(--line); font-size: 16px; font-weight: 900; }
+.swatches label span { visibility: hidden; }
+.swatches input:checked + label { box-shadow: 0 0 0 3px var(--ink); }
+.swatches input:checked + label span { visibility: visible; }
+.swatches input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 3px; }
+.look .preview { display: flex; gap: 8px; }

@@ -4,8 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacy e regole · Prima o Poi</title>
-<meta name="theme-color" content="#E3F0F2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E2129" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#E3F0F2">
+<script>
+  try { document.documentElement.dataset.theme = localStorage.getItem("pop-theme") || "light"; }
+  catch (e) { document.documentElement.dataset.theme = "light"; }
+</script>
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="stylesheet" href="style.css">
 <style>
@@ -53,7 +56,7 @@
   <p>Non ci sono altri servizi esterni: niente statistiche, pubblicità o pulsanti social. Anche i caratteri tipografici sono ospitati sul sito, senza collegamenti a Google Fonts.</p>
 
   <h2>Cookie e memoria del telefono</h2>
-  <p>L'app non usa cookie di profilazione né di statistica. Usa solo la memoria del browser (localStorage e IndexedDB) per ricordare il codice del gruppo, il tuo nome, i filtri scelti e l'accesso anonimo, e per tenere una copia della lista così si apre anche senza rete. Sono strumenti tecnici necessari al funzionamento, per questo non serve un banner per i cookie. Se cancelli i dati del browser, l'app li dimentica: rientri con il codice.</p>
+  <p>L'app non usa cookie di profilazione né di statistica. Usa solo la memoria del browser (localStorage e IndexedDB) per ricordare il codice del gruppo, il tuo nome, i filtri, il tema e i colori scelti e l'accesso anonimo, e per tenere una copia della lista così si apre anche senza rete. Sono strumenti tecnici necessari al funzionamento, per questo non serve un banner per i cookie. Se cancelli i dati del browser, l'app li dimentica: rientri con il codice.</p>
 
   <h2>Per quanto tempo</h2>
   <p>I dati restano finché resti nel gruppo. Quello che elimini dall'app viene tolto subito dal database.</p>
