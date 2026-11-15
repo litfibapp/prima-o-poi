@@ -1,44 +1,54 @@
-/* Prima o Poi — pensata prima di tutto per il telefono: una colonna di biglietti, filtri che scorrono, pulsante "Aggiungi" in basso. */
+/* Prima o Poi — stile "libro illustrato": cielo azzurro, asinelli blu ardesia, eliche color crema, alloro.
+   Pensata prima di tutto per il telefono: una colonna di biglietti, filtri che scorrono, pulsante "Aggiungi" in basso. */
 
 /* Font ospitati sul sito (licenza SIL OFL, vedi fonts/): nessuna richiesta a Google Fonts. */
 @font-face {
-  font-family: "Bricolage Grotesque"; font-style: normal; font-weight: 200 800; font-display: swap;
-  src: url("fonts/bricolage-grotesque-latin.woff2") format("woff2");
+  font-family: "Fredoka"; font-style: normal; font-weight: 300 700; font-display: swap;
+  src: url("fonts/fredoka-latin.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Figtree"; font-style: normal; font-weight: 300 900; font-display: swap;
-  src: url("fonts/figtree-latin.woff2") format("woff2");
+  font-family: "Nunito"; font-style: normal; font-weight: 200 1000; font-display: swap;
+  src: url("fonts/nunito-latin.woff2") format("woff2");
 }
 
 :root {
-  --bg: #EDF0F4;
-  --surface: #FFFFFF;
-  --surface-2: #F6F8FA;
-  --ink: #15202C;
-  --muted: #5A6778;
-  --line: #D4DBE4;
-  --accent: #2545D3;
+  /* dal disegno: cielo, asinello, notte, crema delle eliche, alloro, nuvole */
+  --sky: #5FA9B8;
+  --sky-ink: #0F2F3A;
+  --cloud: #F4FAFB;
+  --bg: #E3F0F2;
+  --surface: #FFFCF4;
+  --surface-2: #F3F1E8;
+  --ink: #17313C;
+  --muted: #4E6670;
+  --line: #CFDDE0;
+  --accent: #3B5D70;        /* il blu degli asinelli */
   --accent-ink: #FFFFFF;
-  --accent-soft: #E3E8FC;
-  --sun: #F2B526;
-  --sun-ink: #382800;
-  --sun-soft: #FDF1CF;
-  --done: #1A6B42;
-  --done-soft: #DDF2E6;
-  --danger: #C2362F;
-  --shadow: 0 1px 2px rgba(21,32,44,.06), 0 4px 14px rgba(21,32,44,.07);
-  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --f-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --r: 14px;
+  --accent-soft: #DCE9EE;
+  --sun: #4C7A2E;           /* alloro: "Ci sto" */
+  --sun-ink: #FFFFFF;
+  --sun-soft: #E5EED8;
+  --done: #1F4A5C;          /* timbro "Fatto" */
+  --done-soft: #DCEBEF;
+  --cream: #F6EEDC;
+  --danger: #B5352C;
+  --shadow: 0 1px 2px rgba(23,49,60,.08), 0 6px 18px rgba(23,49,60,.10);
+  --f-display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r: 20px;
   --gut-l: max(16px, env(safe-area-inset-left, 0px));
   --gut-r: max(16px, env(safe-area-inset-right, 0px));
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0E131A; --surface: #17202B; --surface-2: #1C2632; --ink: #E7ECF2; --muted: #93A1B3; --line: #2A3644;
-    --accent: #8197FF; --accent-ink: #0A1024; --accent-soft: #212C55; --sun: #F3C34C; --sun-ink: #2A1D00; --sun-soft: #3A3014;
-    --done: #5DC78C; --done-soft: #17362A; --danger: #FF7B72; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    /* la stessa scena, di notte */
+    --sky: #1D4654; --sky-ink: #EAF4F5; --cloud: #23505F;
+    --bg: #0E2129; --surface: #17303A; --surface-2: #1C3843; --ink: #EAF3F4; --muted: #9DB6BD; --line: #2A4752;
+    --accent: #A7C8DA; --accent-ink: #0C2430; --accent-soft: #22404D;
+    --sun: #9CC77A; --sun-ink: #13240A; --sun-soft: #25391F;
+    --done: #A9D4E3; --done-soft: #183A47; --cream: #EADFC6;
+    --danger: #FF8A80; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.28);
     color-scheme: dark;
   }
 }
@@ -51,50 +61,56 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 [hidden] { display: none !important; }
-h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; text-wrap: balance; margin: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .stack { display: flex; flex-direction: column; gap: 14px; }
 
-.logo { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
-.logo span { color: var(--accent); }
-.logo.small { font-size: 24px; }
+.logo { font-family: var(--f-display); font-size: 46px; font-weight: 600; line-height: 1; color: var(--ink); }
+.logo span { color: var(--sun); }
+.logo.small { font-size: 23px; color: var(--sky-ink); white-space: nowrap; }
+.logo.small span { color: var(--cream); -webkit-text-stroke: 1.5px var(--sky-ink); paint-order: stroke fill; }
 
 /* buttons & fields */
-.btn { border: 0; border-radius: 12px; padding: 13px 18px; font-weight: 700; cursor: pointer; background: var(--accent); color: var(--accent-ink); font-size: 16px; }
+.btn { border: 0; border-radius: 999px; padding: 13px 20px; font-weight: 800; cursor: pointer; background: var(--accent); color: var(--accent-ink); font-size: 16px; }
 .btn:active { transform: scale(.98); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn-soft { background: var(--accent-soft); color: var(--accent); }
-.btn-ghost { background: none; color: var(--danger); border: 1px solid var(--line); }
-.icon-btn { border: 0; background: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--ink); font-size: 18px; flex: none; }
-.icon-btn:hover { background: var(--surface-2); }
-label.f { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
-label.f small { font-weight: 400; }
+.btn-ghost { background: none; color: var(--danger); border: 1.5px solid var(--line); }
+.icon-btn { border: 0; background: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: inherit; font-size: 18px; flex: none; }
+.icon-btn:hover { background: rgba(255,255,255,.25); }
+label.f { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 800; color: var(--muted); letter-spacing: .02em; }
+label.f small { font-weight: 600; }
 input[type=text], input[type=url], input[type=search], select, textarea {
-  width: 100%; border: 1px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 12px 13px;
+  width: 100%; border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 14px; padding: 12px 14px;
   font-size: 16px; /* 16px evita lo zoom automatico su iPhone */ color: var(--ink);
 }
 textarea { resize: vertical; }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
-.formmsg { font-size: 14px; color: var(--danger); margin: 0; }
+.formmsg { font-size: 14px; color: var(--danger); margin: 0; font-weight: 700; }
 .formmsg:empty { display: none; }
 .hint { font-size: 14px; color: var(--muted); margin: 0; }
-.lbl { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.lbl { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 
-/* onboarding */
-.onboard { min-height: 100dvh; display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top)) var(--gut-r) max(24px, env(safe-area-inset-bottom)) var(--gut-l); }
-.onboard-card { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 16px; }
+/* onboarding: il cielo con il disegno del gruppo */
+.onboard { min-height: 100dvh; display: grid; justify-items: center; align-content: start; padding: calc(56px + env(safe-area-inset-top, 0px)) var(--gut-r) max(24px, env(safe-area-inset-bottom)) var(--gut-l);
+  background: linear-gradient(180deg, var(--sky) 0, var(--sky) 230px, var(--bg) 231px); }
+.onboard-card { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 16px; background: var(--surface); border-radius: 28px; padding: 22px 20px 24px; box-shadow: var(--shadow); }
+.hero { display: block; width: 100%; max-width: 100%; aspect-ratio: 637 / 632; max-height: 240px; object-fit: cover; object-position: 50% 25%; border-radius: 20px; border: 4px solid var(--cream); transform: rotate(-1.2deg); box-shadow: var(--shadow); margin-top: -48px; background: var(--sky); }
 .lead { margin: 0; color: var(--muted); font-size: 17px; }
-.or { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 14px; }
-.or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.or { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 14px; font-weight: 700; }
+.or::before, .or::after { content: ""; flex: 1; height: 2px; border-radius: 2px; background: var(--line); }
 
-/* top bar */
-.bar { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
-.bar-in { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 12px; padding: 10px var(--gut-r) 10px var(--gut-l); }
-.tally { margin-left: auto; font-size: 14px; color: var(--muted); white-space: nowrap; }
-.tally b { color: var(--ink); font-variant-numeric: tabular-nums; }
+/* top bar: una striscia di cielo con il bordo a nuvole */
+.bar { position: sticky; top: 0; z-index: 5; background: var(--sky); color: var(--sky-ink); padding-top: env(safe-area-inset-top, 0px); }
+.bar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -11px; height: 12px; pointer-events: none;
+  background: radial-gradient(circle at 12px 0, var(--sky) 11px, transparent 12px) 0 0 / 34px 12px repeat-x; }
+.bar-in { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 8px; padding: 8px var(--gut-r) 8px var(--gut-l); }
+.mascot { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--cream); flex: none; object-fit: cover; background: var(--sky); }
+.tally { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--sky-ink); white-space: nowrap; }
+.tally b { color: var(--sky-ink); font-variant-numeric: tabular-nums; font-family: var(--f-display); font-size: 17px; }
 
-.page { max-width: 760px; margin: 0 auto; padding: 14px var(--gut-r) calc(110px + env(safe-area-inset-bottom, 0px)) var(--gut-l); display: flex; flex-direction: column; gap: 14px; }
+.page { max-width: 760px; margin: 0 auto; padding: 24px var(--gut-r) calc(110px + env(safe-area-inset-bottom, 0px)) var(--gut-l); display: flex; flex-direction: column; gap: 14px; }
 .notice { border-radius: var(--r); padding: 12px 14px; background: var(--sun-soft); border: 1px solid var(--sun); font-size: 14px; }
 
 /* toolbar */
@@ -151,7 +167,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 .empty p { margin: 0 auto; max-width: 42ch; }
 
 /* floating add button */
-.fab { position: fixed; z-index: 6; right: calc(var(--gut-r) + 0px); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 16px; padding: 15px 22px; box-shadow: 0 6px 20px rgba(37,69,211,.35); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.fab { position: fixed; z-index: 6; right: calc(var(--gut-r) + 0px); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 16px; padding: 15px 22px; box-shadow: 0 6px 20px rgba(23,49,60,.35); cursor: pointer; display: flex; align-items: center; gap: 8px; }
 .fab span { font-size: 24px; line-height: 0; margin-top: -2px; }
 
 /* bottom sheets */
@@ -190,3 +206,11 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
 .toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 16px; border-radius: 12px; font-size: 15px; box-shadow: var(--shadow); max-width: calc(100% - 32px); z-index: 30; text-align: center; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* tocchi del disegno */
+.empty img { width: 96px; height: 96px; border-radius: 50%; border: 3px solid var(--cream); margin: 0 auto 10px; display: block; background: var(--sky); }
+.card h3, .sheet-head h2, .empty h3 { font-weight: 600; }
+.stamp { font-weight: 700; }
+.chips button { font-weight: 800; }
+.ghost { font-weight: 800; border-width: 1.5px; }
+@media (max-width: 370px) { .mascot { display: none; } }

@@ -218,7 +218,7 @@ function render() {
     const [t, p] = !loaded ? ["Sto caricando la lista…", "Qui compariranno i posti e le attività del gruppo."]
       : items.length === 0 ? ["La lista è vuota, per ora", "Tocca \"Aggiungi\" per mettere il primo posto o la prima attività. Poi invita gli amici dal menu in alto."]
       : ["Niente con questi filtri", "Prova a cambiare stato, tipo o categoria, oppure svuota la ricerca."];
-    $("empty").replaceChildren(h("h3", null, t), h("p", null, p));
+    $("empty").replaceChildren(h("img", { src: "images/asino.webp", alt: "", width: "96", height: "96" }), h("h3", null, t), h("p", null, p));
   }
 }
 

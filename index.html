@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Prima o Poi</title>
 <meta name="description" content="La lista condivisa dei posti da vedere e delle cose da fare insieme.">
-<meta name="theme-color" content="#EDF0F4" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E131A" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#5FA9B8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1D4654" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Prima o Poi">
@@ -14,7 +14,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="preload" href="fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fredoka-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,6 +23,7 @@
 <!-- Schermata: entra o crea un gruppo -->
 <main id="screen-group" class="onboard" hidden>
   <div class="onboard-card">
+    <img class="hero" src="images/gruppo.webp" width="637" height="632" alt="Il disegno del gruppo: asinelli blu che volano con le eliche nel cielo, uno con la corona d'alloro e il maglione.">
     <h1 class="logo">Prima <span>o</span> Poi</h1>
     <p class="lead">La lista dei posti da vedere e delle cose da fare con i tuoi amici. Niente iscrizioni: serve solo il codice del gruppo.</p>
 
@@ -43,6 +45,7 @@
 <!-- Schermata: come ti chiami -->
 <main id="screen-name" class="onboard" hidden>
   <form id="name-form" class="onboard-card stack" autocomplete="off">
+    <img class="hero" src="images/gruppo.webp" width="637" height="632" alt="Il disegno del gruppo: asinelli blu che volano con le eliche nel cielo.">
     <h1 class="logo">Ciao!</h1>
     <p class="lead">Come ti chiami? Gli altri del gruppo vedranno questo nome accanto alle tue idee.</p>
     <input type="text" id="name-input" maxlength="40" placeholder="Il tuo nome" autocomplete="given-name" required>
@@ -56,6 +59,7 @@
 <div id="screen-app" hidden>
   <header class="bar">
     <div class="bar-in">
+      <img class="mascot" src="images/asino.webp" width="40" height="40" alt="">
       <h1 class="logo small">Prima <span>o</span> Poi</h1>
       <div class="tally" aria-live="polite"><b id="n-todo">0</b> da fare · <b id="n-done">0</b> fatte</div>
       <button class="icon-btn" id="open-menu" type="button" aria-label="Gruppo e impostazioni">
